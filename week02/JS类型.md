@@ -26,7 +26,7 @@ IEEE 754 Double Float 双精度浮点数：
 - 十进制：0. 与 .2都是合法的。0.toString()报错， 0 .toString()正确。
 - 二进制：0b开头
 - 八进制：0o开头
-- 十六进制：Ox开头 
+- 十六进制：0x开头 
 
 ### String
 

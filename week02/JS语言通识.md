@@ -54,6 +54,22 @@ BNF是一种用于表示上下文无关文法的语法规则（语法范式/元�
            <MulExp>"/"<Number>
 把 <Number> 视为一种特殊的乘法结构， 简化加减运算的定义。
 MulExp 是 AddExp 的子结构，AddExp 是 ParExp 的子结构。
+
+优秀作业收获：
+1. EOF 文件结尾或标准输入结尾 http://www.ruanyifeng.com/blog/2011/11/eof.html
+2. <ParExp> 第3行到第6行不对，不是AddExp，是ParExp
+3. + - * / 可以定位为非终结符
+4. 思路1 带括号的四则运算由加法表达式组成，思路2 带括号的表达式作为乘法表达式的基础。
+<ParExp>::=<AddExp>|
+           "("<ParExp>")"|
+           <ParExp> <AO> <ParExp>|
+           <ParExp> <MO> <ParExp>
+<AddExp>::=<MulExp>|
+           <AddExp> <AO> <MulExp>
+<MulExp>::=<Number>|
+           <MulExp> <MO> <Number>
+<MO>::="*"|"/"
+<AO>::="+"|"-"
 ```
 
 产生式的左边，不一定只有一个终结符，可以在左边产生多个非终结符。

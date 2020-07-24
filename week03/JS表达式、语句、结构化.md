@@ -146,3 +146,6 @@ JS中，每个函数调用都会生成一个闭包❓❓
 JS可能根据外部的条件去创建不同的Realm，不同的Real实例之间可以互相传递对象。
 
 可视化框架，蚂蚁前端的G6，G6适合做对象的可视化。把real可视化，看看JS的realm里究竟有多少对象。只是JS，不包括浏览器的。
+
+[ECMA规范中，realm相关内容](https://www.ecma-international.org/ecma-262/#realm)
+

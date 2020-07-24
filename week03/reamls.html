@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style></style>
+  </head>
+
+  <body>
+    <div id="container"></div>
+  </body>
+
+  <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.5.10/dist/g6.min.js"></script>
+  <script>
+    var model = {
+      id: 'Realms',
+      children: [
+        {
+          id: 'GlobalObject',
+          children: [
+            {
+              id: 'ValueProperties',
+              children: [
+                { id: 'globalThis' },
+                { id: 'Infinity' },
+                { id: 'NaN' },
+                { id: 'undefined' }
+              ]
+            },{
+              id: 'FunctionProperties',
+              children: [
+                { id: 'eval()' },
+                { id: 'isFinite()' },
+                { id: 'isNaN()' },
+                { id: 'parseFloat()' },
+                { id: 'parseInt()' },
+                { id: 'encodeURI()' },
+                { id: 'encodeURIComponent()' },
+                { id: 'decodeURI()' },
+                { id: 'decodeURIComponent()' },
+              ]
+            }, {
+              id: 'ConstructorProperties',
+              children: [
+                {
+                  id: 'FundamentalObjects',
+                  children: [
+                    { id: 'Object' },
+                    { id: 'Function' },
+                    { id: 'Boolean' },
+                    { id: 'Symbol' },
+                  ]
+                },{
+                  id: 'ErrorObejcts',
+                  children: [
+                    { id: 'Error' },
+                    { id: 'ReferenceError' },
+                    { id: 'SyntaxError' },
+                    { id: 'TypeError' },
+                    { id: 'URIError' },
+                    { id: 'EvalError' },
+                    { id: 'RangeError' },
+                    { id: 'InternalError ' },
+                    { id: 'AggregateError ' },
+                  ]
+                }, {
+                  id: 'Number&Dates',
+                  children: [
+                    { id: 'BigInt' },
+                    { id: 'Number' },
+                    { id: 'Math' },
+                    { id: 'Date' },
+                  ]
+                }, {
+                  id: 'TextProcessing',
+                  children: [
+                    { id: 'String' },
+                    { id: 'RegExp' },
+                  ]
+                }, {
+                  id: 'KeyCollections',
+                  children: [
+                    { id: 'Map' },
+                    { id: 'Set' },
+                    { id: 'WeakMap' },
+                    { id: 'WeakSet' },
+                  ]
+                }, {
+                  id: 'IndexedCollections',
+                  children: [
+                    { id: 'Array' },
+                    { id: 'Int8Array' },
+                    { id: 'Uint8Array' },
+                    { id: 'Uint8ClampedArray' },
+                    { id: 'Int16Array' },
+                    { id: 'Uint16Array' },
+                    { id: 'Int32Array' },
+                    { id: 'Uint32Array ' },
+                    { id: 'Float32Array ' },
+                    { id: 'Float64Array' },
+                    { id: 'BigInt64Array ' },
+                    { id: 'BigUint64Array ' },
+                  ]
+                }, {
+                  id: 'StructuredData',
+                  children: [
+                    { id: 'ArrayBuffer' },
+                    { id: 'SharedArrayBuffer ' },
+                    { id: 'Atomics' },
+                    { id: 'DataView' },
+                    { id: 'JSON' },
+                  ]
+                }, {
+                  id: 'ControlAbstractionObjects',
+                  children: [
+                    { id: 'Promise' },
+                    { id: 'Generator' },
+                    { id: 'GeneratorFunction' },
+                    { id: 'AsyncFunction' },
+                  ]
+                }, {
+                  id: 'Reflection',
+                  children: [
+                    { id: 'Reflect' },
+                    { id: 'Proxy ' },
+                  ]
+                }, {
+                  id: 'Internationalization',
+                  children: [
+                    { id: 'Intl' },
+                    { id: 'Intl.Collator ' },
+                    { id: 'Intl.DateTimeFormat' },
+                    { id: 'Intl.ListFormat ' },
+                    { id: 'Intl.NumberFormat ' },
+                    { id: 'Intl.PluralRules' },
+                    { id: 'Intl.RelativeTimeFormat' },
+                    { id: 'Intl.Locale' },
+                  ]
+                }, {
+                  id: 'WebAssemb',
+                  children: [
+                    { id: 'WebAssembly' },
+                    { id: 'WebAssembly.Module ' },
+                    { id: 'WebAssembly.Instance' },
+                    { id: 'WebAssembly.Memory ' },
+                    { id: 'WebAssembly.Table ' },
+                    { id: 'WebAssembly.CompileError' },
+                    { id: 'WebAssembly.LinkError' },
+                    { id: 'WebAssembly.RuntimeError' },
+                  ]
+                }, {
+                  id: 'arguments',
+                }
+              ]
+            }
+          ]
+        },
+        { id: 'TemplateMap'},
+        { id: 'Intrinsics' },
+        { id: 'GlobalEnv' },
+        { id: 'HostDefined'}
+      ]
+    }
+
+    drawG6(model);
+
+    function drawG6(data) {
+      const graph = new G6.TreeGraph({
+        container: "container",
+        width: window.innerWidth,
+        height: window.innerHeight,
+        modes: {
+          default: [
+            {
+              type: "collapse-expand",
+              onChange: function onChange(item, collapsed) {
+                const data = item.get("model").data;
+                data.collapsed = collapsed;
+                return true;
+              },
+            },
+            "drag-canvas",
+            "zoom-canvas",
+          ],
+        },
+        defaultNode: {
+          size: 26,
+          anchorPoints: [
+            [0, 0.5],
+            [1, 0.5],
+          ],
+          style: {
+            fill: "#C6E5FF",
+            stroke: "#5B8FF9",
+          },
+        },
+        defaultEdge: {
+          type: "cubic-horizontal",
+          style: {
+            stroke: "#A3B1BF",
+          },
+        },
+        layout: {
+          type: "compactBox",
+          direction: "LR",
+          getId: function getId(d) {
+            return d.id;
+          },
+          getHeight: function getHeight() {
+            return 16;
+          },
+          getWidth: function getWidth() {
+            return 16;
+          },
+          getVGap: function getVGap() {
+            return 10;
+          },
+          getHGap: function getHGap() {
+            return 100;
+          },
+        },
+      });
+
+      graph.node(function (node) {
+        return {
+          label: node.id,
+          labelCfg: {
+            offset: 10,
+            position:
+              node.children && node.children.length > 0 ? "left" : "right",
+          },
+        };
+      });
+
+      graph.data(data);
+      graph.render();
+      graph.fitView();
+    }
+  </script>
+</html>
