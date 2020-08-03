@@ -1,7 +1,7 @@
 const net = require('net');
 const parser = require('./parser.js');
 const render = require('./render.js');
-
+const images = require('images');
 class Request {
     constructor(options) {
         this.method = options.method || 'GET';
@@ -32,11 +32,9 @@ class Request {
                     port: this.port
                 },() => {
                     connection.write(this.toString());
-                    console.log("Request -> send -> this.toString()", this.toString())
                 })
             }
             connection.on('data', (data) => {
-            console.log("Request -> send -> data", data.toString())
                 parser.receive(data.toString());
                 if(parser.isFinished) {
                     resolve(parser.response);
@@ -44,15 +42,15 @@ class Request {
                 }
             });
             connection.on('error', (err) => {
-            console.log("Request -> send -> err", err)
                 reject(err);
                 connection.end();
             });
         })
     }
 
+    // 注意：1. HTTP/1.1与/r之间，没有空格。2.最后两行，行首、行尾不能有空格。
     toString() {
-        return `${this.method} ${this.path} HTTP/1.1 \r
+        return `${this.method} ${this.path} HTTP/1.1\r
 ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
 \r
 ${this.bodyText}`
@@ -82,7 +80,7 @@ class ResponseParser{
     }
 
     get response() {
-        this.statusLine.match(/HTTP\/1.1  ([0-9]+) ([\s\S]+)/);
+        this.statusLine.match(/HTTP\/1.1 ([0-9]+) ([\s\S]+)/);
         return {
             statusCode: RegExp.$1,
             statusText: RegExp.$2,
@@ -111,7 +109,7 @@ class ResponseParser{
             }else if(char === '\r') {
                 this.current = this.WAITING_HEADER_BLOCK_END
                 if(this.headers['Transfer-Encoding'] === 'chunked') {
-                    this.bodyParser = new TrunkedBodyParser(char);
+                    this.bodyParser = new TrunkedBodyParser();
                 }
             }else{
                 this.headerName += char;
@@ -138,7 +136,7 @@ class ResponseParser{
                 this.current = this.WAITING_BODY
             }
         }else if(this.current = this.WAITING_BODY) {
-            console.log(char)
+            this.bodyParser.receiveChar(char);
         }
     }
 }
@@ -203,7 +201,9 @@ void async function () {
         body: { name: 'request', age: '1' }
     })
     const response = await request.send();
+    console.log("response", response);
     const dom = parser.parserHTML(response.body);
+    console.log("dom", dom)
     
     let viewport = images(800, 600);
     render(viewport, dom.children[0].children[3].children[1].children[3]);
