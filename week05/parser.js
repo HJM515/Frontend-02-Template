@@ -11,13 +11,14 @@ let currentTextNode = null;
 let rules = [];
 function addCSSRules(text) {
     var ast = css.parse(text);
-    console.log(JSON.stringify(ast, null, '  '));
+    console.log("addCSSRules -> ast", ast)
+    // console.log(JSON.stringify(ast, null, '  '));
     rules.push(...ast.stylesheet.rules);
 }
 
 function computeCSS(element) {
-    console.log(rules);
-    console.log('compute CSS for Element', element);
+    // console.log(rules);
+    // console.log('compute CSS for Element', element);
     var elements = stack.slice().reverse();
     if(!element.computedStyle) {
         element.computedStyle = {}
@@ -38,6 +39,7 @@ function computeCSS(element) {
             matched = true
         }
         if(matched) {
+            console.log("Element", element, "matched rule", rule);
             var sp = specificity(rule.selectors[0]);
             var computedStyle = element.computedStyle;
             for(var declaration of rule.declarations) {
@@ -52,7 +54,7 @@ function computeCSS(element) {
                     computedStyle[declaration.property].specificity = sp
                 }
             }
-            console.log(element.computedStyle)
+            // console.log(element.computedStyle)
         }
     }
 }
@@ -102,10 +104,9 @@ function compare(sp1, sp2) {
     return sp1[3] - sp2[3]
 }
 function emit(token) {
-    if(token.type === 'text') {
-        return;
-    }
+    // console.log("emit -> token", token)
     let top = stack[stack.length -1];
+
     if(token.type === 'startTag') {
         let element = {
             type: 'element',
@@ -114,7 +115,7 @@ function emit(token) {
         }
         element.tagName = token.tagName;
         for(let p in token ) {
-            if(p !== 'type' && a !== 'tagName') {
+            if(p !== 'type' && p !== 'tagName') {
                 element.attributes.push({ name: p, value: token[p]});
             }
         }
@@ -123,6 +124,7 @@ function emit(token) {
 
         top.children.push(element);
         element.parent = top;
+
         if(!token.isSelfClosing) {
             stack.push(element);
         }
@@ -133,6 +135,7 @@ function emit(token) {
         }else {
             // ----------遇到style标签时，执行添加CSS规则的操作-----------
             if(top.tagName === 'style') {
+                console.log("emit -> top.tagName", top.tagName)
                 addCSSRules(top.children[0].content)
             }
             layout(top);
@@ -194,19 +197,20 @@ function tagName(c) {
         currentToken.tagName += c.toLowerCase();
         return tagName;
     }else if(c === '>') {
+        emit(currentToken)
         return data;
     }else {
         return tagName;
     }
 }
 
-function beforeAttributeName() {
+function beforeAttributeName(c) {
     if(c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
     }else if(c === '>' || c === '/' || c === EOF) {
         return afterAttributeName(c);
     }else if(c === '=') {
-        return beforeAttributeName;
+        // return beforeAttributeName;
     }else{
         currentAttribute = { name: '', value: '' };
         return attributeName(c);
@@ -229,7 +233,7 @@ function attributeName(c) {
 }
 
 function beforeAttributeValue(c) {
-    if(c.match(/^[\t\n\f ]$/ || c === '/' || c === '>' || c === EOF)) {
+    if(c.match(/^[\t\n\f ]$/ || c === '/' || c === EOF)) {
         return beforeAttributeValue;
     }else if(c === '"') {
         return doubleQuotedAttributeValue;
@@ -239,6 +243,29 @@ function beforeAttributeValue(c) {
         return data;
     }else {
         return UnquotedAttributeValue;
+    }
+}
+
+function afterAttributeName(c){
+    if(c.match(/^[\t\n\f ]$/)){
+        return afterAttributeName;
+    }else if(c === "/"){
+        return selfClosingStartTag;
+    }else if(c === "="){
+        return beforeAttributeValue;
+    }else if(c === ">"){
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        emit(currentToken);
+        return data;
+    }else if(c === EOF){
+
+    }else{
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        currentAttribute = {
+            name: "",
+            value: ""
+        };
+        return attributeName(c);
     }
 }
 
@@ -283,7 +310,12 @@ function afterQuotedAttributeValue(c) {
 
     }else {
         currentAttribute.value += c;
-        return doubleQuotedAttributeValue;
+        if(c === "\""){
+            return doubleQuotedAttributeValue;
+        }else if(c === "\'"){
+            return singleQuotedAttributeValue;
+        }
+        // return doubleQuotedAttributeValue;
     }
 }
 function UnquotedAttributeValue(c) {
@@ -309,9 +341,10 @@ function UnquotedAttributeValue(c) {
     }
 }
 
-function selfClosingStartTag() {
+function selfClosingStartTag(c) {
     if(c === '>') {
         currentToken.isSelfClosing = true;
+        return data;
     }else if(c === 'EOF') {
 
     }else {
@@ -323,7 +356,8 @@ function parserHTML(html) {
     for(let c of html) {
         state = state(c);
     }
-    state = state[EOF];
+    state = state(EOF);
+    return stack[0];
 }
 
 module.exports = {

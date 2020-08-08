@@ -5,7 +5,7 @@ http.createServer((req, res) => {
     req.on('error', err => {
         console.log(err);
     }).on('data', chunk => {
-        console.log("chunk", chunk)
+        console.log("chunk", chunk.toString())
         body.push(chunk);
     }).on('end', () => {
         console.log("body", body)
