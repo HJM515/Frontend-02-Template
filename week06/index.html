@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        section{
+            direction:rtl;
+            unicode-bidi: bidi-override;
+        }
+        section::first-letter{
+            /* float: right; */
+            display: block;
+            font-size: 25px;
+            color: red;
+        }
+        section::first-line{
+            float: right;
+            color: blue;
+        }
+        div{
+            display: inline;
+        }
+        div>div#a {
+            display: inline;
+            color:green;
+        }
+        div::first-line { 
+            color:blue; 
+        }
+        div::first-letter { 
+            color:blue; 
+        }
+    </style>
+  </head>
+  <body>
+    <div>
+        <div id=a>First paragraph</div>
+        <span>Second paragraph</span>
+        afasdf asdf 
+    </div>
+      <section>
+          ？？？？？本段文字将按照<span>水平从右到左</span>的书写方向进行流动
+          <div>
+              <div>
+
+                  <div class="class" id="id">fadsfsdf </div>
+              </div>
+          </div>
+      </section>
+      <section>
+        如果紧跟在任何量词 *、 +、? 或 {} 的后面，将会使量词变为非贪婪（匹配尽量少的字符），和缺省使用的贪婪模式（匹配尽可能多的字符）正好相反。例如，对 "123abc" 使用 /\d+/ 将会匹配 "123"，而使用 /\d+?/ 则只会匹配到 "1"
+      </section>
+    <script>
+    /**
+     * @param {string} selector 目前仅支持 后代选择器 + 复合选择器
+     * @param {element} element DOM元素
+     * @return {boolean}
+     */
+
+      function match(selector, element) {
+        var list = selector.split(' ').reverse();
+        
+        if(!matchCompoundSelector(list[0], element)) return false
+        element = element.parentElement
+        for(var i = 1; i < list.length; i++) {
+            var res = matchCompoundSelector(list[i], element);
+            if(!res) {
+                if(!element.parentElement) return false
+                i--;
+                element = element.parentElement
+            }
+        }
+        return true;
+      }
+
+      function matchCompoundSelector(selector, element) {
+        if (!selector || !element) return false;
+        var sample_s = "";
+        for (var i = 0; i < selector.length; i++) {
+          sample_s += selector[i];
+          if (selector[i + 1] === "#" || selector[i + 1] === "." || !selector[i+1]) {
+              console.log("matchCompoundSelector -> sample_s", sample_s)
+            var res = matchSampleSelector(sample_s, element);
+            if (res) {
+              sample_s = "";
+            } else {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function matchSampleSelector(selector, element) {
+        if (!selector || !element) return false;
+        if (selector.charAt(0) === "#") {
+          var attr = [...element.attributes].filter((attr) => attr.name === "id")[0];
+          if (attr && attr.value === selector.replace("#", "")) return true;
+        } else if (selector.charAt(0) === ".") {
+          var attr = [...element.attributes].filter(
+            (attr) => attr.name === "class"
+          )[0];
+          if (attr && attr.value === selector.replace(".", "")) return true;
+        } else {
+          if (element.tagName.toLowerCase() === selector) {
+            return true;
+          }
+        }
+        return false;
+      }
+      
+      
+      var result = match("section div#id.class", document.getElementById("id"));
+      console.log("match", result)
+    </script>
+  </body>
+</html>

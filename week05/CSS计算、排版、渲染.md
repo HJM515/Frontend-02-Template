@@ -3,11 +3,18 @@
 ## CSS计算
 
 1. 收集CSS规则：遇到style （endTag），添加CSS规则（使用css库解析拿到ast）。假设不考虑body内的style规则。
+
 2. 获取父元素序列：从HTML解析的stack中，获取本元素的所有父元素，按从内到外的顺序匹配计算。
+
 3. 拆分选择器：将复杂选择器拆分成单元素选择器，用循环匹配父元素队列。
+
 4. 匹配元素：根据选择器的类型和元素属性，计算是否与当前元素匹配。
+
 5. 生成computed属性：匹配后应用选择器到元素上，形成computedStyle。
+
 6. 确定规则覆盖关系：根据specificity和后来优先原则覆盖。specificity是四元组，左边优先级高。
+
+   [0,  0,   0,  0]   [inline,  id,  class,   tag]
 
 ## CSS排版
 
