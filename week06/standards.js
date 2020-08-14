@@ -577,5 +577,8 @@ void async function() {
         iframe.src = standard.url;
         console.log(iframe.name);
         await happen(iframe, 'load');
+        var properties = Array.prototype.map.call(iframe.contentWindow.document.querySelectorAll(".propdef [data-dfn-type=property]"), e => e.childNodes[0].textContent);
+        console.log("properties", properties)
+        
     }
 }();

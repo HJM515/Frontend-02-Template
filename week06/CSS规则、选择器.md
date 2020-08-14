@@ -46,7 +46,7 @@ CDO CDC, HTML注释的起点和终点（早年CSS兼容考虑，旧的浏览器�
   - Key：variables、properties
   - Value：calc、number、length...
 
-```
+```js
 Array.prototype.slice.call(document.querySelector('#container').children).filter(e => {
 	return e.getAttribute('data-tag').match(/css/)
 }).map(e => {
