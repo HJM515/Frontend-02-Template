@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APIS</title>
+  </head>
+  <body>
+    <script>
+      /**
+       * window.open() 打开浏览器空白页，或者chrome无痕模式
+       * 我电脑的chrome(windows), names长度为945，对比发现有225个属性chrome中有但firefox没有
+       * 我电脑的firefox, names长度为830, 对比发现有97个属性firefox中有但chrome没有
+       * 有意思的现象是，当我在这里打印names长度，居然是919, 少了["dir", "dirxml", "profile", "profileEnd", "clear", "table", "keys", "values", "debug", "undebug", "monitor", "unmonitor", "inspect", "copy", "queryObjects", "$_", "$0", "$1", "$2", "$3", "$4", "getEventListeners", "monitorEvents", "unmonitorEvents", "$", "$$", "$x"]
+       */
+      let names = Object.getOwnPropertyNames(window);
+
+      function filterOut(names, props) {
+        let set = new Set();
+        props.forEach((o) => set.add(o));
+        return names.filter((e) => !set.has(e));
+      }
+
+      // ECMA 262
+      {
+        //   获取方式：
+        //     直接到ECMA标准网站，发现不好通过DOM获取。https://www.ecma-international.org/ecma-262/#sec-global-object
+        //     于是找了MDN中的标准内置对象。https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects
+        //     const codes = document.querySelectorAll("ul code");
+        //     let tmp = []
+        //     tmp.forEach(i => {objects.push(i.innerText)})
+        //     tmp.map((i) => i.split("(")[0]).filter((i) => !i.includes("."));
+
+        names = filterOut(names, [
+          "Infinity",
+          "NaN",
+          "undefined",
+          "globalThis",
+          "eval",
+          "uneval",
+          "isFinite",
+          "isNaN",
+          "parseFloat",
+          "parseInt",
+          "decodeURI",
+          "decodeURIComponent",
+          "encodeURI",
+          "encodeURIComponent",
+          "escape",
+          "unescape",
+          "Object",
+          "Function",
+          "Boolean",
+          "Symbol",
+          "Error",
+          "AggregateError",
+          "EvalError",
+          "InternalError",
+          "RangeError",
+          "ReferenceError",
+          "SyntaxError",
+          "TypeError",
+          "URIError",
+          "Number",
+          "BigInt",
+          "Math",
+          "Date",
+          "String",
+          "RegExp",
+          "Array",
+          "Int8Array",
+          "Uint8Array",
+          "Uint8ClampedArray",
+          "Int16Array",
+          "Uint16Array",
+          "Int32Array",
+          "Uint32Array",
+          "Float32Array",
+          "Float64Array",
+          "BigInt64Array",
+          "BigUint64Array",
+          "Map",
+          "Set",
+          "WeakMap",
+          "WeakSet",
+          "ArrayBuffer",
+          "SharedArrayBuffer",
+          "Atomics",
+          "DataView",
+          "JSON",
+          "Promise",
+          "Generator",
+          "GeneratorFunction",
+          "AsyncFunction",
+          "Reflect",
+          "Proxy",
+          "Intl",
+          "WebAssembly",
+          "arguments",
+        ]);
+      }
+
+      // Subclass of Node
+      let node_subclass = [];
+      let no_prototype = [];
+      names = names
+        .filter((e) => {
+          try {
+            if (window[e].prototype instanceof Node) {
+              node_subclass.push(e);
+              return false;
+            } else {
+              return true;
+            }
+          } catch (err) {
+            no_prototype.push(e);
+            return true;
+          }
+        })
+        .filter((e) => e != "Node");
+
+      // events
+      names = names.filter((e) => !e.match(/^on/));
+
+      // webkit private
+      names = names.filter((e) => !e.match(/^webkit/));
+
+      // https://html.spec.whatwg.org/#window
+      // 获取方式：
+      // const cs = document.querySelectorAll('#the-window-object+pre code.idl a[href^="#dom"] c-[g]')
+      //   tmp = [];
+      //   cs.forEach(i => {
+      //     tmp.push(i.innerHTML);
+      //   })
+      //   tmp = [...new Set(tmp)];
+      names = filterOut(names, [
+        "window",
+        "self",
+        "document",
+        "name",
+        "location",
+        "history",
+        "customElements",
+        "locationbar",
+        "menubar",
+        "personalbar",
+        "scrollbars",
+        "statusbar",
+        "toolbar",
+        "status",
+        "close",
+        "closed",
+        "stop",
+        "focus",
+        "blur",
+        "frames",
+        "length",
+        "top",
+        "opener",
+        "parent",
+        "frameElement",
+        "open",
+        "navigator",
+        "applicationCache",
+        "originIsolated",
+        "alert",
+        "confirm",
+        "prompt",
+        "print",
+        "postMessage",
+        "console",
+      ]);
+
+      // https://html.spec.whatwg.org
+      // 没有找到好的爬取方式，看着似乎散落在标准中
+      names = filterOut(names, [
+        "ApplicationCache",
+        "AudioTrack",
+        "AudioTrackList",
+        "BeforeUnloadEvent",
+        "BroadcastChannel",
+        "CanvasGradient",
+      ]);
+
+      // http://www.ecma-international.org/ecma-402/5.0/index.html/#Title
+      names = names.filter((e) => e != "Intl");
+
+      // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15
+      names = filterOut(names, [
+        "WebGLVertexArrayObject",
+        "WebGLUniformLocation",
+        "WebGLTransformFeedback",
+        "WebGLTexture",
+        "WebGLSync",
+        "WebGLShaderPrecisionFormat",
+        "WebGLShader",
+        "WebGLSampler",
+        "WebGLRenderingContext",
+        "WebGLRenderbuffer",
+        "WebGLQuery",
+        "WebGLProgram",
+        "WebGLFramebuffer",
+        "WebGLContextEvent",
+        "WebGLBuffer",
+        "WebGLActiveInfo",
+        "WebGL2RenderingContext",
+      ]);
+
+      // https://www.w3.org/TR/webaudio/
+      // 获取方式： document.querySelectorAll('#APIOverview+p+ul li[data-md] code a')
+      name = filterOut(names, [
+        "AudioNode",
+        "AudioContext",
+        "AnalyserNode",
+        "AudioBuffer",
+        "AudioBufferSourceNode",
+        "AudioDestinationNode",
+        "AudioParam",
+        "AudioListener",
+        "PannerNode",
+        "AudioWorklet",
+        "AudioWorkletGlobalScope",
+        "AudioWorkletNode",
+        "AudioWorkletProcessor",
+        "BiquadFilterNode",
+        "ChannelMergerNode",
+        "ChannelSplitterNode",
+        "ConstantSourceNode",
+        "ConvolverNode",
+        "DelayNode",
+        "DynamicsCompressorNode",
+        "GainNode",
+        "IIRFilterNode",
+        "MediaElementAudioSourceNode",
+        "audio",
+        "video",
+        "MediaStreamAudioSourceNode",
+        "MediaStream",
+        "MediaStreamTrackAudioSourceNode",
+        "MediaStreamTrack",
+        "MediaStreamAudioDestinationNode",
+        "PeriodicWave",
+        "OscillatorNode",
+        "StereoPannerNode",
+        "WaveShaperNode",
+      ]);
+
+      // https://encoding.spec.whatwg.org/#dom-textencoder
+      names = filterOut(names, [
+        "TextDecoder",
+        "TextEncoder",
+        "TextDecoderStream",
+        "TextEncoderStream",
+      ]);
+
+      // https://streams.spec.whatwg.org/#blqs-class
+      names = filterOut(names, [
+        "ReadableStream",
+        "ReadableStreamDefaultReader",
+        "ReadableStreamBYOBReader",
+        "ReadableStreamDefaultController",
+        "ReadableByteStreamController",
+        "ReadableStreamBYOBRequest",
+        "WritableStream",
+        "WritableStreamDefaultWriter",
+        "WritableStreamDefaultController",
+        "TransformStream",
+        "TransformStreamDefaultController",
+        "ByteLengthQueuingStrategy",
+        "CountQueuingStrategy",
+      ]);
+
+      // https://wicg.github.io/BackgroundSync/spec/#sync-manager-interface
+      names = filterOut(names, ["SyncManager"]);
+
+      // https://w3c.github.io/webrtc-pc/#event-track
+      names = filterOut(names, [
+        "RTCTrackEvent",
+        "RTCStatsReport",
+        "RTCSessionDescription",
+        "RTCRtpTransceiver",
+        "RTCRtpSender",
+        "RTCRtpReceiver",
+        "RTCPeerConnectionIceEvent",
+        "RTCPeerConnectionIceErrorEvent",
+        "RTCPeerConnection",
+        "RTCIceCandidate",
+        "RTCErrorEvent",
+        "RTCError",
+        "RTCDataChannelEvent",
+        "RTCDataChannel",
+        "RTCDTMFToneChangeEvent",
+        "RTCDTMFSender",
+        "RTCCertificate",
+      ]);
+
+      // https://www.w3.org/TR/2013/REC-performance-timeline-20131212/
+      // https://www.w3.org/TR/2019/WD-performance-timeline-2-20191024/
+      name = filterOut(names, [
+        "PerformanceTiming",
+        "PerformanceServerTiming",
+        "PerformanceResourceTiming",
+        "PerformancePaintTiming",
+        "PerformanceObserverEntryList",
+        "PerformanceObserver",
+        "PerformanceNavigationTiming",
+        "PerformanceNavigation",
+        "PerformanceMeasure",
+        "PerformanceMark",
+        "PerformanceLongTaskTiming",
+        "PerformanceEventTiming",
+        "PerformanceEntry",
+        "PerformanceElementTiming",
+        "Performance",
+      ]);
+      console.log(names);
+    </script>
+  </body>
+</html>
