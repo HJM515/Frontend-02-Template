@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTocToe</title>
+    <style>
+        .cell{
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            font-size: 50px;
+            text-align: center;
+            font-size: 0;
+            vertical-align: top;
+            color: #fff;
+            border: 1px solid;
+            background: rgb(5, 92, 34);
+        }
+    </style>
+</head>
+<body>
+    <div class="board"></div>
+    <div class="player"></div>
+    <div class="over"></div>
+
+    <script>
+        // winter 老师示例代码的几个问题/优化点：
+        // 1. cell的插入使用fragment，是不是更优？
+        // 2. cell元素的点击事件，使用匿名函数监听。在一方获胜游戏结束后，无法移除点击事件的监听。（参数的传递可以使用data-属性）
+        // 3. 用户点击事件后，是执行show重绘好？还是直接赋值e.target.innerText更好？
+        // 3. check函数中，在判断当前值与color(本例中的code)不相等时，提前退出循环是否更优?
+
+        let pattern = [
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0
+        ];
+        let code = 1;
+        let player = document.getElementsByClassName('player')[0];
+        let over = document.getElementsByClassName('over')[0];
+
+        player.innerText = 'user:' + numToText(code) + '\n computer:' + numToText(3 - code);
+
+        function show(pattern) {
+            const board = document.getElementsByClassName('board')[0];
+            board.innerHTML = ''
+            let fragment = document.createDocumentFragment();
+            for(let i = 0; i < pattern.length/3; i++) {
+                for(let j = 0; j < 3; j++) {
+                    let cell = document.createElement('div');
+                    let index = i*3+j;
+                    cell.innerText = numToText(pattern[index]);
+                    cell.setAttribute('class', 'cell');
+                    cell.setAttribute('data-index', index);
+                    cell.addEventListener('click', userMove);
+                    fragment.appendChild(cell);
+                }
+                fragment.appendChild(document.createElement('br'));
+            }
+            board.appendChild(fragment);
+        }
+
+        show(pattern);
+
+        function numToText(num) {
+            return num === 1 ? 'O' : 
+                   num === 2 ? 'X' : ''
+        }
+
+        function userMove(e) {
+            const index = e.target.dataset.index;
+            pattern[index] = code;
+            e.target.innerText = numToText(code);
+            if(check(pattern, code)) {
+                gameOver()
+            }
+            code = 3 - code;
+            computerMove();
+        }
+
+        function computerMove() {
+            const best = bestChoice(pattern, code);
+            pattern[best.point] = code;
+            show(pattern);
+            if(check(pattern, code)) {
+                gameOver()
+            }
+            code = 3 - code;
+        }
+
+        function gameOver() {
+            alert(code === 1 ? 'O is winner' : 'X is winner');
+            let cells = document.getElementsByClassName('cell');
+            console.log("gameOver -> cells", cells)
+            for(let cell of cells) {
+                cell.removeEventListener('click', userMove)
+            }
+            over.innerText = 'game over'
+        }
+
+        function check(pattern, code) {
+            for(let i = 0; i < 3; i++) {
+                let win = true
+                for(let j = i*3; j < i*3 + 3; j++) {
+                    if(pattern[j] !== code) {
+                        win = false
+                        j = i*3 + 3 // 提前退出该循环
+                    }
+                }
+                if(win) return true
+            }
+            for(let i = 0; i < 3; i++) {
+                let win = true;
+                for(let j = 0; j < 3; j++) {
+                    if(pattern[j*3 + i] !== code) {
+                        win = false;
+                        j = 3
+                    }
+                }
+                if(win) return true
+            }
+            {
+                let win = true
+                for(let i = 0; i < 3; i++) {
+                    if(pattern[i + i*3] !== code) {
+                        win = false;
+                        i = 3;
+                    }
+                }
+                if(win) return true;
+            }
+            {
+                let win = false;
+                for(let i = 1; i < 4; i++) {
+                    if(pattern[i*3 - i] !== code) {
+                        win = false;
+                        i = 4;
+                    }
+                }
+                if(win) return true
+            }
+        }
+
+        function clone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        function wilWin(pattern, code) {
+            for(let i = 0; i < pattern.length; i++) {
+                if(!pattern[i]) {
+                    let tmp = clone(pattern);
+                    tmp[i] = code;
+                    if(check(tmp, code)) {
+                        return i;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function bestChoice(pattern, code) {
+            let point = wilWin(pattern, code);
+            if(point) {
+                return {
+                    point: point,
+                    result: 1
+                }
+            }
+            let result = -2;
+            outer: for(let i = 0; i < 3; i++) {
+                for(let j = 0; j < 3; j++) {
+                    if(pattern[i*3 + j]) continue;
+                    let tmp = clone(pattern);
+                    tmp[i*3 + j] = code;
+                    let r = bestChoice(tmp, 3-code).result;
+                    if(-r > result) {
+                        result = -r;
+                        point = i*3+j;
+                    }
+                    if(result === 1) break outer;
+                }
+            }
+            return {
+                point: point,
+                result: point ? result : 0
+            }
+        }
+        
+    </script>
+</body>
+</html>

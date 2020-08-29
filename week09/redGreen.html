@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedGreen</title>
+    <style>
+        .light{
+            display: inline-block;
+            margin-right: 50px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        .green{
+            background: #0f0;
+        }
+        .yellow{
+            background: yellow;
+        }
+        .red{
+            background: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+
+    <script>
+        let [green, yellow, red] = document.getElementsByClassName('light');
+
+        function sleep(wait) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve()
+                }, wait)
+            })
+        }
+
+        async function run() {
+            red.setAttribute('class', 'light');
+            green.setAttribute('class', 'light green');
+            await sleep(2000)
+            green.setAttribute('class', 'light');
+            yellow.setAttribute('class', 'light yellow');
+            await sleep(500);
+            yellow.setAttribute('class', 'light');
+            red.setAttribute('class', 'light red');
+            await sleep(1000);
+            run()
+        }
+        run()
+    </script>
+</body>
+</html>
