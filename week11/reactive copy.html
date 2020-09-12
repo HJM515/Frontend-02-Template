@@ -1,0 +1,82 @@
+<div id="box" style="margin-top:50px;width:100px;height:100px"></div>
+
+<script>
+    // let callbacks = [];
+    let callbacks = new Map();
+
+    // 问题1：修改a属性(值为对象), 改成另一个对象。 √ 解决了问题1，但是后加的对象都不是响应式了，哎，头大，想不出来了
+    //       reactivities 会多增加一项，原本a属性对应的还在。
+    //       不断修改a属性，reactivities的内容会越来越多。（如何删除失去引入的对象的reactivity？）
+    // po.a = {c: 666}; // a属性改成其他对象
+
+    // 现象2：修改b属性(值为数字)，改成对象。非响应式，获取一次之后变成响应式。
+    let reactivities = new Map();
+
+    let useReactivities = [];
+
+    let obj = {
+        a: { b: 1},
+        b: 2,
+    };
+
+    let po = reactive(obj);
+
+    effect(() => {
+        console.log(po.a.b, 'cb1');
+    })
+
+    // po 原本没有x属性，但x的改变也会是响应式的
+    // 这与vue2.x使用Object.defineProperty不同（没有x就没有设置get、set）
+    effect(() => {
+        console.log(po.x, 'cb2')
+    })
+
+    function effect(cb) {
+        useReactivities = []
+        cb()
+        console.log(useReactivities)
+        for(reactivity of useReactivities) {
+            const [obj, prop] = reactivity;
+            if(!callbacks.has(obj)) {
+                callbacks.set(obj, new Map());
+            }
+            if(!callbacks.get(obj).has(prop)) {
+                callbacks.get(obj).set(prop, []);
+            }
+            callbacks.get(obj).get(prop).push(cb);
+            console.log("effect -> callbacks", callbacks)
+        }
+    }
+
+    function reactive(target, obj, prop, is_new) {
+        obj = obj || target;
+        prop = prop || obj;
+        if(reactivities.has(obj) && reactivities.get(obj).has(prop) && !is_new)
+            return reactivities.get(obj).get(prop);
+        
+        let proxy = new Proxy(target, {
+            set(obj, prop, val) {
+                obj[prop] = val;
+                if(callbacks.has(obj) && callbacks.get(obj).has(prop))
+                    callbacks.get(obj).get(prop).forEach(cb => cb());
+                if(typeof val === 'object' && val !== null) 
+                    reactive(val, obj, prop, true);
+                return obj;
+            },
+            get(obj, prop) {
+                useReactivities.push([obj, prop]);
+                if(typeof obj[prop] === 'object' && obj[prop] !== null) {
+                    return reactive(obj[prop], obj, prop);
+                }
+                return obj[prop];
+            }
+        });
+
+        if(!reactivities.has(obj)) 
+            reactivities.set(obj, new Map());
+
+        reactivities.get(obj).set(prop, proxy)
+        
+        return proxy;
+    }
+</script>

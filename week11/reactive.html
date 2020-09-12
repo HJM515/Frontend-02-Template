@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        label{
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <label>
+        <strong>R</strong><br/>
+        <input id="r" type="range" min="0" max="255"/>
+    </label>
+    <label>
+        <strong>G</strong><br/>
+        <input id="g" type="range" min="0" max="255"/>
+    </label>
+    <label>
+        <strong>B</strong><br/>
+        <input id="b" type="range" min="0" max="255"/>
+    </label>
+    <div id="box" style="margin-top:50px;width:100px;height:100px"></div>
+
+    <script>
+        // let callbacks = [];
+        let callbacks = new Map();
+
+        // 问题1：修改a属性(值为对象), 改成另一个对象。
+        //       reactivities 会多增加一项，原本a属性对应的还在。
+        //       不断修改a属性，reactivities的内容会越来越多。（如何删除失去引入的对象的reactivity？）
+        // po.a = {c: 666}; // a属性改成其他对象
+        // 现象1：修改b属性(值为数字)，改成对象。非响应式，获取一次之后变成响应式。
+        let reactivities = new Map();
+
+        let useReactivities = [];
+
+        let obj = {
+            a: { b: 1},
+            b: 2,
+            r: 10,
+            g: 100,
+            b: 200
+        };
+
+        let po = reactive(obj);
+
+        effect(() => {
+            console.log(po.a.b, 'cb1');
+        })
+
+        // po 原本没有x属性，但x的改变也会是响应式的
+        // 这与vue2.x使用Object.defineProperty不同（没有x就没有设置get、set）
+        effect(() => {
+            console.log(po.x, 'cb2')
+        })
+
+        const r = document.getElementById('r');
+        const g = document.getElementById('g');
+        const b = document.getElementById('b');
+        const box = document.getElementById('box');
+
+        effect(() => {
+            r.value = po.r;
+            g.value = po.g;
+            b.value = po.b;
+            box.style.background = `rgb(${po.r}, ${po.g}, ${po.b})`;
+        })
+
+        r.addEventListener('input', (e) => (po.r = e.target.value))
+        g.addEventListener('input', (e) => (po.g = e.target.value))
+        b.addEventListener('input', (e) => (po.b = e.target.value))
+
+        function effect(cb) {
+            useReactivities = []
+            cb()
+            console.log(useReactivities)
+            for(reactivity of useReactivities) {
+                const [obj, prop] = reactivity;
+                if(!callbacks.has(obj)) {
+                    callbacks.set(obj, new Map());
+                }
+                if(!callbacks.get(obj).has(prop)) {
+                    callbacks.get(obj).set(prop, []);
+                }
+                callbacks.get(obj).get(prop).push(cb);
+                console.log("effect -> callbacks", callbacks)
+            }
+        }
+
+        function reactive(target) {
+            if(reactivities.has(target))
+                return reactivities.get(target);
+            
+            let proxy = new Proxy(target, {
+                set(obj, prop, val) {
+                    obj[prop] = val;
+                    if(callbacks.has(obj) && callbacks.get(obj).has(prop))
+                        callbacks.get(obj).get(prop).forEach(cb => cb());
+                    return obj;
+                },
+                get(obj, prop) {
+                    useReactivities.push([obj, prop]);
+                    if(typeof obj[prop] === 'object' && obj[prop] !== null) {
+                        return reactive(obj[prop]);
+                    }
+                    return obj[prop];
+                }
+            });
+
+            reactivities.set(target, proxy);
+            
+            return proxy;
+        }
+
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<div id="container">
+    Range 接口表示一个包含节点与文本节点的一部分的文档片段。
+    可以用 Document 对象的 Document.createRange 方法创建 Range，
+    也可以用 Selection 对象的 getRangeAt 方法获取 Range。
+    另外，还可以通过 Document 对象的构造函数 Range() 来得到 Range。
+    CSS Object Model 是一组允许用JavaScript操纵CSS的API。 
+    它是继DOM和HTML API之后，又一个操纵CSS的接口，从而能够动态地读取和修改CSS样式。
+    全局属性 draggable 是一个枚举类型的属性，用于标识元素是否允许使用 拖放操作API 拖动。它的取值如下：
+    true，表示元素可以被拖动false，表示元素不可以被拖动
+    如果该属性没有设值，则默认值 为 auto ，表示使用浏览器定义的默认行为。
+    这个属性是枚举类型，而不是 布尔类型 。这意味着必须显式指定值为 true 或者 false。
+    默认情况下，只有已选中的文本、图片、链接可以拖动。对其它的元素来说，必须按拖动机制的顺序设置 ondragstart 事件才能正常工作， 见 综合示例 。
+</div>
+<div id="drag-box" style="display:inline-block;width:100px;height:100px;background:pink;"></div>
+
+<script>
+    const drag = document.getElementById('drag-box');
+
+    let baseX = 0, baseY = 0;
+
+    drag.addEventListener('mousedown', (event) => {
+        let startX = event.clientX, startY = event.clientY;
+        let up = (event) => {
+            baseX += event.clientX - startX;
+            baseY += event.clientY - startY;
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+        }
+        let move = (event) => {
+            let diffX = event.clientX - startX;
+            let diffY = event.clientY - startY;
+            const range = getNearestRange(event.clientX, event.clientY);
+            range.insertNode(drag);
+            // drag.style.transform = `translate(${baseX + diffX}px, ${baseX + diffY}px)`;
+        }
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+    })
+
+    const container = document.getElementById('container');
+    let ranges = [];
+    let text = container.childNodes[0];
+    for(let i in text.textContent) {
+        let range = document.createRange();
+        range.setStart(text, i);
+        range.setEnd(text, i);
+        ranges.push(range);
+    }
+
+    function getNearestRange(x, y) {
+        let min = Infinity;
+        let nearest = null;
+        for(let range of ranges) {
+            const rect = range.getBoundingClientRect();
+            const distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+            if(distance < min) {
+                min = distance;
+                nearest = range;
+            }
+        }
+        return nearest;
+    }
+
+    document.addEventListener('selectstart', event => event.preventDefault());
+</script>
