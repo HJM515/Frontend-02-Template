@@ -1,0 +1,17 @@
+<body oncontextmenu="event.preventDefault()">
+    <div id="box" style="width:100px;height:100px;background:lightblue;"></div>
+
+    <script type="module">
+        import { enableGesture } from './gesture.js';
+
+        enableGesture(document.documentElement);
+        
+        document.getElementById('box').addEventListener('mousedown', e => {
+            console.log(e)
+        })
+
+        document.documentElement.addEventListener('tap', () => {
+      console.log(`tap event`)
+    })
+    </script>
+</body>
