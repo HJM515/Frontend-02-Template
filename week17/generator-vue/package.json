@@ -1,0 +1,12 @@
+{
+  "name": "generator-vue",
+  "version": "1.0.0",
+  "files": [
+    "app"
+  ],
+  "keywords": ["yeoman-generator"],
+  "license": "MIT",
+  "dependencies": {
+    "yeoman-generator": "^1.0.0"
+  }
+}
