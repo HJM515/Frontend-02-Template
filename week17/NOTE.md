@@ -18,3 +18,7 @@ npm i -D @babel/core @babel/preset-env @babel/register
 },
 ```
 
+## istanbul
+
+https://istanbul.js.org/docs/tutorials/es2015/
+
