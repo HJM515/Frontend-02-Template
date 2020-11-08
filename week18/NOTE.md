@@ -55,16 +55,24 @@ https://docs.github.com/en/free-pro-team@latest/developers/apps/authorizing-oaut
 2. publish-tool：打开 GET https://github.com/login/oauth/authorize
 3. publish-server：auth 路由，接收code, 用 code + client_id + client_secret 去换取 token
 4. publish-tool：创建 server, 接收 token
-5. publish-server：publish 路由，用token 获取用户信息，检查权限，接收发布
+5. publish-server：publish 路由，用token 获取用户信息，检查权限，发布
 
 说一说坑：
 
 1. /login/oauth/access_token 接口 返回的body总时空的。
 
-打开授权页，重定向带的 code 是会过期的。重新new github app, 使用新的client_id, client_secret 就可以了。
+打开授权页，重定向带的 code 是会过期的。如果有问题，需要重新运行 publish-tool，从登录流程头开始重试。
+
+最后，重新new github app, 使用新的client_id, client_secret 就可以了（不知道是不是第一次建的app有问题）。
 
 2. 获取用户信息的接口返回有误。
 
 hostname 是 api.github.com， 不是 github.com。
 
+3. 阿里云服务器，FinalShell 中，node 进程无法通过ctrl + c 结束。
+
+```
+ps -ef | grep node 查看进程
+kill xxxx 杀死进程
+```
 
